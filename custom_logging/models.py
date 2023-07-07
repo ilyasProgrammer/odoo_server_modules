@@ -25,16 +25,19 @@ class MyHandler(logging.Handler):
                 text = record.message
             now = fields.Datetime.now().replace(tzinfo=pytz.UTC)
             now = now.astimezone(pytz.timezone("Europe/Berlin")).strftime('%Y-%m-%d %H:%M:%S')
+            channel = False
             if record.levelname in ['ERROR']:
-                response = self.sc.chat_postMessage(
-                    channel=self.slack_error_channel,
-                    text=now + "    " + text
-                )
+                channel = self.slack_error_channel,
             elif record.levelname in ['WARNING']:
-                response = self.sc.chat_postMessage(
-                    channel=self.slack_warning_channel,
-                    text=now + "    " + text
-                )
+                channel = self.slack_warning_channel,
+            if channel:
+                try:
+                    response = self.sc.chat_postMessage(
+                        channel=self.slack_warning_channel,
+                        text=now + "    " + text
+                    )
+                except Exception as e:
+                    print(e)
 
 
 mh = MyHandler()
